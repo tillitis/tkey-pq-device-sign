@@ -42,6 +42,12 @@ var (
 
 const MaxSignSize = 4096
 
+// MLDSAPubKeySize is the size of an ML-DSA-44 (Dilithium2) public key in bytes.
+const MLDSAPubKeySize = 1312
+
+// MLDSASigSize is the size of an ML-DSA-44 (Dilithium2) signature in bytes.
+const MLDSASigSize = 2420
+
 type appCmd struct {
 	code   byte
 	name   string
