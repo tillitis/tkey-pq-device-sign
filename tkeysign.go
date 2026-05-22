@@ -127,6 +127,9 @@ func (s Signer) GetAppNameVersion() (*tkeyclient.NameVersion, error) {
 
 // GetPubkey fetches the public key of the signer.
 func (s Signer) GetPubkey() ([]byte, error) {
+	// CMDLEN_MAXBYTES = 127 (CmdLen128 payload minus the 1-byte response code)
+	const chunkSize = 127
+
 	id := 2
 	tx, err := tkeyclient.NewFrameBuf(cmdGetPubkey, id)
 	if err != nil {
@@ -138,14 +141,24 @@ func (s Signer) GetPubkey() ([]byte, error) {
 		return nil, fmt.Errorf("Write: %w", err)
 	}
 
-	rx, _, err := s.tk.ReadFrame(rspGetPubkey, id)
-	tkeyclient.Dump("GetPubKey rx", rx)
-	if err != nil {
-		return nil, fmt.Errorf("ReadFrame: %w", err)
+	pubkey := make([]byte, MLDSAPubKeySize)
+	received := 0
+	for received < MLDSAPubKeySize {
+		rx, _, err := s.tk.ReadFrame(rspGetPubkey, id)
+		tkeyclient.Dump("GetPubKey rx", rx)
+		if err != nil {
+			return nil, fmt.Errorf("ReadFrame: %w", err)
+		}
+		chunk := MLDSAPubKeySize - received
+		if chunk > chunkSize {
+			chunk = chunkSize
+		}
+		// Skip frame header (rx[0]) and response code (rx[1]); data starts at rx[2]
+		copy(pubkey[received:], rx[2:2+chunk])
+		received += chunk
 	}
 
-	// Skip frame header & app header, returning size of ed25519 pubkey
-	return rx[2 : 2+32], nil
+	return pubkey, nil
 }
 
 // Sign signs the message in data and returns an ed25519 signature.
