@@ -256,9 +256,13 @@ func (s Signer) signLoad(content []byte) (int, error) {
 	return copied, nil
 }
 
-// getSig gets the ed25519 signature from the signer app, if
-// available.
+// getSig gets the ML-DSA signature from the signer app, if available.
+// The device sends the signature in chunks: each frame has STATUS_OK at rx[2]
+// and up to 126 bytes of signature data at rx[3:129] (CMDLEN_MAXBYTES-1 per frame).
 func (s Signer) getSig() ([]byte, error) {
+	// CMDLEN_MAXBYTES-1 = 126 (status byte occupies the first payload byte)
+	const chunkSize = 126
+
 	id := 2
 	tx, err := tkeyclient.NewFrameBuf(cmdGetSig, id)
 	if err != nil {
@@ -270,18 +274,28 @@ func (s Signer) getSig() ([]byte, error) {
 		return nil, fmt.Errorf("Write: %w", err)
 	}
 
-	rx, _, err := s.tk.ReadFrame(rspGetSig, id)
-	if err != nil {
-		return nil, fmt.Errorf("ReadFrame: %w", err)
+	signature := make([]byte, MLDSASigSize)
+	received := 0
+	for received < MLDSASigSize {
+		rx, _, err := s.tk.ReadFrame(rspGetSig, id)
+		if err != nil {
+			return nil, fmt.Errorf("ReadFrame: %w", err)
+		}
+		// rx[2] holds STATUS_OK/STATUS_BAD in every chunk frame
+		if rx[2] != tkeyclient.StatusOK {
+			return nil, fmt.Errorf("getSig NOK")
+		}
+		chunk := MLDSASigSize - received
+		if chunk > chunkSize {
+			chunk = chunkSize
+		}
+		// Skip frame header (rx[0]), response code (rx[1]), and status (rx[2]);
+		// signature data starts at rx[3]
+		copy(signature[received:], rx[3:3+chunk])
+		received += chunk
 	}
 
-	if rx[2] != tkeyclient.StatusOK {
-		return nil, fmt.Errorf("getSig NOK")
-	}
-
-	// Skip frame header, app header, and status; returning size of
-	// ed25519 signature
-	return rx[3 : 3+64], nil
+	return signature, nil
 }
 
 // GetFWDigest asks the signer app to hash len bytes of the firmware.
