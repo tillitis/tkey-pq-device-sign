@@ -1,17 +1,16 @@
 [![ci](https://github.com/tillitis/tkeysign/actions/workflows/ci.yaml/badge.svg?branch=main&event=push)](https://github.com/tillitis/tkeysign/actions/workflows/ci.yaml) [![Go Reference](https://pkg.go.dev/badge/github.com/tillitis/tkeysign.svg)](https://pkg.go.dev/github.com/tillitis/tkeysign)
 
-# Tillitis TKey Sign package
+# Tillitis TKey Sign PQ package
 
-A Go package for communicating with the [`signer` device
-app](https://github.com/tillitis/tkey-device-signer) on a
+A Go package for communicating with the [`pqsigner` device
+app](https://github.com/tillitis/tkey-device-pqsigner) on a
 [Tillitis](https://tillitis.se/) TKey to get cryptographic signatures
 over a message.
 
-See the [Go doc](https://pkg.go.dev/github.com/tillitis/tkeysign)
-for `tkeysign` for details on how to call the functions.
+See the [Go doc](https://pkg.go.dev/github.com/tillitis/tkeysign-pq)
+for `tkeysign-pq` for details on how to call the functions.
 
-See [tkey-ssh-agent](https://github.com/tillitis/tkey-ssh-agent) and
-[tkey-sign-cli](https://github.com/tillitis/tkey-sign-cli) for client
+See [tkey-sign-cli-pq](https://github.com/tillitis/tkey-sign-cli-pq) for client
 applications using this go package.
 
 Release notes in [RELEASE.md](RELEASE.md).
