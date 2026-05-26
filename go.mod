@@ -1,4 +1,4 @@
-module github.com/tillitis/tkeysign
+module github.com/tillitis/tkeysign-pq
 
 go 1.23.0
 
