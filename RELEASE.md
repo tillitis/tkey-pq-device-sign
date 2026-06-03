@@ -5,3 +5,4 @@
 Migrated from https://github.com/tillitis/tkeysign and renamed to tkeysign-pq
 
 - Implemented library github.com/cloudflare/circl to use ml-dsa-44
+- Implemented new function to use mldsa44 with external mu computation
