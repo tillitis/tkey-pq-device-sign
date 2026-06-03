@@ -48,6 +48,9 @@ const MLDSAPubKeySize = 1312
 // MLDSASigSize is the size of an ML-DSA-44 (Dilithium2) signature in bytes.
 const MLDSASigSize = 2420
 
+// MLDSAMuSize is the size of the external mu input (FIPS 204 CRHBYTES) in bytes.
+const MLDSAMuSize = 64
+
 type appCmd struct {
 	code   byte
 	name   string
@@ -176,6 +179,40 @@ func (s Signer) Sign(data []byte) ([]byte, error) {
 		}
 	}
 	if offset > len(data) {
+		return nil, fmt.Errorf("transmitted more than expected")
+	}
+
+	signature, err := s.getSig()
+	if err != nil {
+		return nil, fmt.Errorf("getSig: %w", err)
+	}
+
+	return signature, nil
+}
+
+// SignExtMu signs a pre-computed 64-byte message representative (mu) and
+// returns an ML-DSA-44 signature. The device app uses mldsa_signature_extmu
+// internally, so the caller must provide exactly MLDSAMuSize (64) bytes.
+// Use computeMu (in the CLI) to derive mu from the public key and message
+// following FIPS 204: tr = SHAKE256(pk, 64); mu = SHAKE256(tr||0x00||0x00||msg, 64).
+func (s Signer) SignExtMu(mu []byte) ([]byte, error) {
+	if len(mu) != MLDSAMuSize {
+		return nil, fmt.Errorf("mu must be exactly %d bytes, got %d", MLDSAMuSize, len(mu))
+	}
+
+	err := s.setSize(len(mu))
+	if err != nil {
+		return nil, fmt.Errorf("setSize: %w", err)
+	}
+
+	var offset int
+	for nsent := 0; offset < len(mu); offset += nsent {
+		nsent, err = s.signLoad(mu[offset:])
+		if err != nil {
+			return nil, fmt.Errorf("signLoad: %w", err)
+		}
+	}
+	if offset > len(mu) {
 		return nil, fmt.Errorf("transmitted more than expected")
 	}
 
