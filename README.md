@@ -7,7 +7,7 @@ app](https://github.com/tillitis/tkey-device-pqsigner) on a
 [Tillitis](https://tillitis.se/) TKey to get cryptographic signatures
 over a message.
 
-The package have both functionality to call for signing with internal MU
+The package has both functionality to call for signing with internal MU
 computation and external, the external is used by default as the `pqsigner`
 uses external computation for signing.
 
