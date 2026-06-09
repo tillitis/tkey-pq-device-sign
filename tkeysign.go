@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2022 Tillitis AB <tillitis.se>
 // SPDX-License-Identifier: BSD-2-Clause
 
-// Package tkeysign provides a connection to the ed25519 signer app
+// Package tkeysign provides a connection to the mldsa signer app
 // running on the TKey. You're expected to pass an existing connection
 // to it, so use it like this:
 //
@@ -101,12 +101,14 @@ func (s Signer) ComputeMu(pubkey, message []byte) []byte {
 
 	return mu
 }
+
+// New allocates a struct for communicating with the mldsa signer
 // app running on the TKey. You're expected to pass an existing
 // connection to it, so use it like this:
 //
 //	tk := tkeyclient.New()
 //	err := tk.Connect(port)
-//	signer := tk1sign.New(tk)
+//	signer := tkeysign.New(tk)
 func New(tk *tkeyclient.TillitisKey) Signer {
 	var signer Signer
 
