@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	"github.com/tillitis/tkeyclient"
+	"golang.org/x/crypto/sha3"
 )
 
 var (
@@ -77,7 +78,29 @@ type Signer struct {
 	tk *tkeyclient.TillitisKey // A connection to a TKey
 }
 
-// New allocates a struct for communicating with the ed25519 signer
+// computeMu derives the 64-byte message representative mu from the public key
+// and message following FIPS 204 ML-DSA.Sign (Algorithm 2, external-mu variant):
+//
+//	tr = SHAKE256(pk, 64)
+//	mu = SHAKE256(tr || 0x00 || 0x00 || message, 64)
+//
+// The two zero bytes encode format byte 0 (ML-DSA, not HashML-DSA) and an
+// empty context string length.
+func (s Signer) ComputeMu(pubkey, message []byte) []byte {
+	h := sha3.NewShake256()
+	tr := make([]byte, 64)
+	h.Write(pubkey)
+	h.Read(tr)
+
+	h.Reset()
+	mu := make([]byte, 64)
+	h.Write(tr)
+	h.Write([]byte{0x00, 0x00})
+	h.Write(message)
+	h.Read(mu)
+
+	return mu
+}
 // app running on the TKey. You're expected to pass an existing
 // connection to it, so use it like this:
 //
