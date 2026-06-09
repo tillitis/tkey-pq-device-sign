@@ -41,8 +41,6 @@ var (
 	rspGetFirmwareHash = appCmd{0x0c, "rspGetFirmwareHash", tkeyclient.CmdLen128}
 )
 
-const MaxSignSize = 4096
-
 // MLDSAPubKeySize is the size of an ML-DSA-44 (Dilithium2) public key in bytes.
 const MLDSAPubKeySize = 1312
 
@@ -187,32 +185,6 @@ func (s Signer) GetPubkey() ([]byte, error) {
 	}
 
 	return pubkey, nil
-}
-
-// Sign signs the message in data and returns an ed25519 signature.
-func (s Signer) Sign(data []byte) ([]byte, error) {
-	err := s.setSize(len(data))
-	if err != nil {
-		return nil, fmt.Errorf("setSize: %w", err)
-	}
-
-	var offset int
-	for nsent := 0; offset < len(data); offset += nsent {
-		nsent, err = s.signLoad(data[offset:])
-		if err != nil {
-			return nil, fmt.Errorf("signLoad: %w", err)
-		}
-	}
-	if offset > len(data) {
-		return nil, fmt.Errorf("transmitted more than expected")
-	}
-
-	signature, err := s.getSig()
-	if err != nil {
-		return nil, fmt.Errorf("getSig: %w", err)
-	}
-
-	return signature, nil
 }
 
 // SignExtMu signs a pre-computed 64-byte message representative (mu) and
