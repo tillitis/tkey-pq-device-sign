@@ -1,22 +1,22 @@
-[![ci](https://github.com/tillitis/tkeysign/actions/workflows/ci.yaml/badge.svg?branch=main&event=push)](https://github.com/tillitis/tkeysign/actions/workflows/ci.yaml) [![Go Reference](https://pkg.go.dev/badge/github.com/tillitis/tkeysign.svg)](https://pkg.go.dev/github.com/tillitis/tkeysign)
+[![ci](https://github.com/tillitis/tkeysign/actions/workflows/ci.yaml/badge.svg?branch=main&event=push)](https://github.com/tillitis/tkeysign/actions/workflows/ci.yaml) [![Go Reference](https://pkg.go.dev/badge/github.com/tillitis/tkeysign.svg)](https://pkg.go.dev/github.com/tillitis/tkey-pq-device-sign)
 
-# Tillitis TKey Sign PQ package
+# Tillitis tkey-pq-device-sign package
 
-A Go package for communicating with the [`pqsigner` device
-app](https://github.com/tillitis/tkey-device-pqsigner) on a
+A Go package for communicating with the [`tkey-pq-device-signer` device
+app](https://github.com/tillitis/tkey-pq-device-signer) on a
 [Tillitis](https://tillitis.se/) TKey to get cryptographic signatures
 over a message.
 
-The package has both functionality to call for signing with internal MU
-computation and external, the external is used by default as the `pqsigner`
+The package has functionality to call for signing with external MU
+computation, the external is used by the `tkey-pq-device-signer`
 uses external computation for signing.
 
-See the [MLDSA draft](https://www.ietf.org/archive/id/draft-connolly-cfrg-ml-dsa-security-considerations-01.html#name-external-mu) for more info about external MU computation.
+See the [ML-DSA draft](https://www.ietf.org/archive/id/draft-connolly-cfrg-ml-dsa-security-considerations-01.html#name-external-mu) for more info about external MU computation.
 
-See the [Go doc](https://pkg.go.dev/github.com/tillitis/tkeysign-pq)
-for `tkeysign-pq` for details on how to call the functions.
+See the [Go doc](https://pkg.go.dev/github.com/tillitis/tkey-pq-device-sign)
+for `tkey-pq-device-sign` for details on how to call the functions.
 
-See [tkey-sign-cli-pq](https://github.com/tillitis/tkey-sign-cli-pq) for client
+See [tkey-pq-sign-cli](https://github.com/tillitis/tkey-pq-sign-cli) for client
 applications using this go package.
 
 Release notes in [RELEASE.md](RELEASE.md).
