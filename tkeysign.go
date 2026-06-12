@@ -17,7 +17,7 @@
 // And like this to sign a message:
 //
 //	signature, err := signer.Sign(message)
-package tkeysign
+package tkeypqdevicesign
 
 import (
 	"fmt"
