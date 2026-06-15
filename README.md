@@ -11,7 +11,9 @@ The package has functionality to call for signing with external MU
 computation, the external is used by the `tkey-pq-device-signer`
 uses external computation for signing.
 
-See the [ML-DSA draft](https://www.ietf.org/archive/id/draft-connolly-cfrg-ml-dsa-security-considerations-01.html#name-external-mu) for more info about external MU computation.
+See the [ML-DSA
+draft](https://www.ietf.org/archive/id/draft-connolly-cfrg-ml-dsa-security-considerations-01.html#name-external-mu)
+for more info about external MU computation.
 
 See the [Go doc](https://pkg.go.dev/github.com/tillitis/tkey-pq-device-sign)
 for `tkey-pq-device-sign` for details on how to call the functions.
@@ -43,7 +45,7 @@ that file.
 The current set of valid, predefined SPDX identifiers can be found on
 the SPDX License List at:
 
-https://spdx.org/licenses/
+[https://spdx.org/licenses/](https://spdx.org/licenses/)
 
 We attempt to follow the [REUSE
 specification](https://reuse.software/).
