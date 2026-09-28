@@ -21,6 +21,7 @@ package tkeypqdevicesign
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/tillitis/tkeyclient"
 	"golang.org/x/crypto/sha3"
@@ -39,7 +40,30 @@ var (
 	rspGetNameVersion  = appCmd{0x0a, "rspGetNameVersion", tkeyclient.CmdLen32}
 	cmdGetFirmwareHash = appCmd{0x0b, "cmdGetFirmwareHash", tkeyclient.CmdLen32}
 	rspGetFirmwareHash = appCmd{0x0c, "rspGetFirmwareHash", tkeyclient.CmdLen128}
+
+	// cmdReset is the standardized reset command that well-behaved
+	// TKey device apps (e.g. tkey-fido2, tkey-boot-verifier's
+	// verifier) implement on top of the TKey Framing Protocol, so a
+	// client can ask whatever app is currently running to reset the
+	// TKey via the sys_reset() syscall.
+	cmdReset = appCmd{0xfe, "cmdReset", tkeyclient.CmdLen4}
 )
+
+// ResetType selects which state the TKey firmware should start in
+// after a reset. See the TKey firmware's reset syscall for the full
+// set of values.
+type ResetType uint8
+
+// ResetTypeStartClient asks firmware to wait for a device app to be
+// loaded from the client (host) over the wire, the same state
+// firmware is in right after a cold boot with an empty flash.
+const ResetTypeStartClient ResetType = 5
+
+// ResetTypeStartDefault asks firmware to boot the same way it would
+// on a cold boot: the app in flash slot 0 (typically a verified boot
+// loader), letting whatever is normally installed on the TKey take
+// over again.
+const ResetTypeStartDefault ResetType = 0
 
 // MLDSAPubKeySize is the size of an ML-DSA-44 (Dilithium2) public key in bytes.
 const MLDSAPubKeySize = 1312
@@ -330,6 +354,44 @@ func (s Signer) getSig() ([]byte, error) {
 	}
 
 	return signature, nil
+}
+
+// SendReset asks whatever app is currently running on the TKey (not
+// necessarily this signer) to reset the TKey using the standardized
+// reset command, most commonly to reclaim it from another resident
+// app such as tkey-fido2 so the signer app can be loaded fresh over
+// the wire. It only works against apps that implement this command;
+// against an app that doesn't, the write is silently ignored by the
+// device and the caller will see no state change after reconnecting.
+//
+// No response is sent for this command: on success the device resets
+// immediately, so tk is no longer usable afterwards. The caller must
+// close tk and reconnect.
+func (s Signer) SendReset(resetType ResetType) error {
+	id := 1
+	tx, err := tkeyclient.NewFrameBuf(cmdReset, id)
+	if err != nil {
+		return fmt.Errorf("NewFrameBuf: %w", err)
+	}
+
+	tx[2] = byte(resetType)
+	tx[3] = 0 // next-app-data byte; unused when resetting straight to client mode
+
+	tkeyclient.Dump("SendReset tx", tx)
+	if err = s.tk.Write(tx); err != nil {
+		return fmt.Errorf("Write: %w", err)
+	}
+
+	// tkeyclient doesn't expose the underlying serial port's Drain(),
+	// and its Close() doesn't wait for pending output to actually be
+	// transmitted before tearing down the connection. Since callers
+	// close and reconnect right after this returns, give the OS a
+	// moment to flush these bytes out over USB first; otherwise the
+	// reset can be silently dropped and the device never resets at
+	// all, which was observed intermittently on real hardware.
+	time.Sleep(250 * time.Millisecond)
+
+	return nil
 }
 
 // GetFWDigest asks the signer app to hash len bytes of the firmware.

@@ -2,6 +2,19 @@
 
 # Tillitis tkey-pq-device-sign package
 
+> **`castor-support-demo` branch:** adds `Signer.SendReset` and
+> `ResetType` (`ResetTypeStartClient`, `ResetTypeStartDefault`), used
+> to reclaim a Castor TKey from another resident app (e.g.
+> `tkey-fido2`) before loading the signer, and to hand it back to its
+> default boot path afterwards. No special build steps beyond the
+> usual `go build`. To see this used end to end, check out the
+> `castor-support-demo` branch of `tkey-pq-sign-cli` (which imports
+> this package as a sibling repo via its `go.mod` `replace` directive)
+> and, to also support resetting the signer app itself, of
+> `tkey-pq-device-signer` (requires tkey-libs `TK1-Q-beta-1`); test
+> against a real Castor TKey or the `tk1-castor` QEMU machine. This
+> branch is for demo purpose.
+
 A Go package for communicating with the [`tkey-pq-device-signer` device
 app](https://github.com/tillitis/tkey-pq-device-signer) on a
 [Tillitis](https://tillitis.se/) TKey to get cryptographic signatures
